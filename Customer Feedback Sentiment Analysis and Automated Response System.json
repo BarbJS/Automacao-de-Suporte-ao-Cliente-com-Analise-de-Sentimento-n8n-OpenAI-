@@ -1,0 +1,775 @@
+{
+  "name": "Customer Feedback Sentiment Analysis and Automated Response System",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "googleSheetId",
+              "value": "1OX0PVOEDHj9RmmSE2rcpZSMzo0_B5G83Q1f21eAgtuc",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "positiveSheetName",
+              "value": "Positive Feedback",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "negativeSheetName",
+              "value": "Negative Feedback",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "alertEmail",
+              "value": "barbjspecian@gmail.com",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "97bfb082-2f7a-4ff2-a769-e9398697b1c3",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -800,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "sentiment",
+              "value": "={{ $json['Your Feedback'] && ($json['Your Feedback'].toLowerCase().includes('great') || $json['Your Feedback'].toLowerCase().includes('excellent') || $json['Your Feedback'].toLowerCase().includes('love') || $json['Your Feedback'].toLowerCase().includes('amazing') || $json['Your Feedback'].toLowerCase().includes('good') || $json['Your Feedback'].toLowerCase().includes('thank') || $json['Your Feedback'].toLowerCase().includes('perfect') || $json['Your Feedback'].toLowerCase().includes('wonderful')) ? 'positive' : 'negative' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "794bea0e-5ab2-43be-b618-024a0f328ea8",
+      "name": "Analyze Sentiment",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $('Analyze Sentiment').item.json.sentiment }}",
+              "rightValue": "positive",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cada359a-adab-4622-92f8-115ce2111b04",
+      "name": "Check Sentiment",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -352,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Você é um assistente de atendimento ao cliente com o estilo empático e caloroso da empresa X. Responda ao feedback positivo do cliente de forma natural e humana.\n\nExemplos de respostas:\n\nExemplo 1:\nFeedback: Adorei o atendimento, muito rápido!\nResposta: Opa! 😊 Que alegria saber que você curtiu! A gente se esforça pra deixar tudo rapidinho mesmo. Obrigado pelo carinho e conte sempre com a gente! 🚀\n\nExemplo 2:\nFeedback: Produto excelente, recomendo!\nResposta: Uau, que felicidade ler isso! 🎉 Ficamos muito felizes que você tenha gostado. Sua recomendação vale ouro pra gente! Volte sempre! ❤️\n\nAgora, leia o feedback positivo abaixo e:\n1. Use a Google Sheets Tool para salvar os dados no spreadsheet\n2. Use a Gmail Tool para enviar um email de agradecimento caloroso e empático no estilo iFood\n\nAo compor o email:\n- Seja natural, caloroso e use emojis com moderação\n- Agradeça sinceramente pelo feedback positivo\n- Reconheça os comentários específicos do cliente\n- Expresse apreciação pelo suporte\n- Mantenha o tom amigável e profissional\n- Assine de forma apropriada\n\nExecute ambas as tarefas para cada feedback positivo recebido."
+        }
+      },
+      "id": "9771d2ea-9e76-4ea6-85a3-a0ed966ec965",
+      "name": "Positive Feedback Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -16,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Você é um especialista em atendimento ao cliente com o estilo empático e acolhedor da empresa X. Responda ao feedback negativo com empatia genuína e soluções práticas.\n\nExemplos de respostas:\n\nExemplo 1:\nFeedback: Pedido atrasou muito, fiquei esperando 2 horas\nResposta: Oi! Sentimos muito mesmo pelo atraso. 😔 Sabemos como é frustrante esperar, e você tem toda razão de estar chateado. Já estamos investigando o que aconteceu pra garantir que isso não se repita. Podemos te ajudar de alguma forma? Estamos aqui! 💙\n\nExemplo 2:\nFeedback: Produto veio errado, muito decepcionante\nResposta: Puxa, que situação chata! 😞 Pedimos desculpas de coração pelo erro. Vamos resolver isso pra você o quanto antes. Me passa mais detalhes do que aconteceu? Queremos deixar tudo certinho! Conte com a gente! 🤝\n\nAgora, leia o feedback negativo abaixo e:\n1. Use a Google Sheets Tool para salvar os dados no spreadsheet\n2. Use a Gmail Tool para enviar um email empático de desculpas no estilo iFood\n\nAo compor o email:\n- Seja genuinamente empático e use emojis com moderação\n- Agradeça pelo tempo dedicado ao feedback\n- Peça desculpas sinceras pela experiência negativa\n- Reconheça as preocupações específicas\n- Expresse compromisso com a melhoria\n- Ofereça assistência ou próximos passos quando apropriado\n- Mantenha o tom empático, profissional e orientado a soluções\n- Assine de forma apropriada\n\nExecute ambas as tarefas para cada feedback negativo recebido."
+        }
+      },
+      "id": "1b5d8c26-02ce-4ad3-9122-2d65e9c13dae",
+      "name": "Negative Feedback Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -16,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.googleSheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Workflow Configuration').first().json.positiveSheetName }}"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $fromAI('name') }}",
+            "email": "={{ $fromAI('email') }}",
+            "feedback": "={{ $fromAI('feedback') }}",
+            "sentiment": "={{ $fromAI('sentiment') }}",
+            "timestamp": "={{ $fromAI('timestamp') }}"
+          },
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feedback",
+              "displayName": "feedback",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6ac9b300-2c03-4640-9a4d-23f9c695f307",
+      "name": "Google Sheets Tool - Positive",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -128,
+        224
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "SnpmPiYzEoalhmRX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.googleSheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Workflow Configuration').first().json.negativeSheetName }}"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $fromAI('name') }}",
+            "email": "={{ $fromAI('email') }}",
+            "feedback": "={{ $fromAI('feedback') }}",
+            "sentiment": "={{ $fromAI('sentiment') }}",
+            "timestamp": "={{ $fromAI('timestamp') }}"
+          },
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feedback",
+              "displayName": "feedback",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "35dc89f9-37c4-4569-a774-04b2ef1f133c",
+      "name": "Google Sheets Tool - Negative",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -128,
+        736
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "SnpmPiYzEoalhmRX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $fromAI('recipient_email') }}",
+        "subject": "={{ $fromAI('email_subject') }}",
+        "message": "={{ $fromAI('email_body') }}",
+        "options": {}
+      },
+      "id": "2d580232-028c-4258-b173-4b551c1d1552",
+      "name": "Gmail Tool - Positive",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        224
+      ],
+      "webhookId": "df6b30ec-831c-4db0-a6a4-e37c23b343c5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "cRDEYRAbd9a8XTPn",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $fromAI('recipient_email') }}",
+        "subject": "={{ $fromAI('email_subject') }}",
+        "message": "={{ $fromAI('email_body') }}",
+        "options": {}
+      },
+      "id": "a5cbfabc-24cb-4658-98e5-45a40f4bd3fc",
+      "name": "Gmail Tool - Negative",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        736
+      ],
+      "webhookId": "410e53db-b3e5-4374-bd0b-d67b4c908454",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "cRDEYRAbd9a8XTPn",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Customer Feedback",
+        "formDescription": "We value your feedback! Please share your experience with us.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Your Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Your Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Your Feedback",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Submit",
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Thank you for your feedback. We appreciate you taking the time to share your thoughts with us."
+            }
+          }
+        }
+      },
+      "id": "51af6204-83a8-4e29-8712-5de9685b9bab",
+      "name": "Customer Feedback Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -1024,
+        304
+      ],
+      "webhookId": "6db3ac4b-bc2c-493e-ad94-87c8d3019764"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        128,
+        736
+      ],
+      "id": "f9ad1116-126a-409c-8c9e-fd9cf7c85073",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ImhiiQDRJK663Vrx",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "4760d05d-19af-44cf-8f92-d55ac62f1293",
+      "name": "Google Gemini Chat Model - Positive",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        128,
+        224
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ImhiiQDRJK663Vrx",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"email_subject\": \"Obrigado pelo seu feedback!\",\n\t\"email_body\": \"Opa! Que alegria receber seu feedback positivo...\",\n\t\"sentiment_score\": 5\n}"
+      },
+      "id": "4f3ea483-9a72-41dd-8bfe-d99c7b7e3ba1",
+      "name": "Structured Output Parser - Positive",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"email_subject\": \"Sobre seu feedback\",\n\t\"email_body\": \"Oi! Sentimos muito pela sua experiência...\",\n\t\"severity\": \"high\",\n\t\"requires_immediate_action\": true\n}"
+      },
+      "id": "a35eb796-1d9e-49dd-a940-23b55c2746a7",
+      "name": "Structured Output Parser - Negative",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "id-1",
+                    "leftValue": "={{ $json.severity }}",
+                    "rightValue": "high",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  },
+                  {
+                    "id": "id-2",
+                    "leftValue": "={{ $json.requires_immediate_action }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "Critical Alert"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Non-Critical"
+        }
+      },
+      "id": "1bf63486-ab1a-40f1-8a6c-30618abcbcb2",
+      "name": "Critical Feedback Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json.output;\n\ntry {\n  const parsed = JSON.parse(output);\n  return [{ json: { ...parsed, originalData: $input.first().json } }];\n} catch (error) {\n  return [{ json: { error: 'Failed to parse JSON', raw: output, originalData: $input.first().json } }];\n}"
+      },
+      "id": "45c3ef84-4345-443e-9fab-03c6234a0fdc",
+      "name": "Parse AI Response - Positive",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json.output;\n\ntry {\n  const parsed = JSON.parse(output);\n  return [{ json: { ...parsed, originalData: $input.first().json } }];\n} catch (error) {\n  return [{ json: { error: 'Failed to parse JSON', raw: output, originalData: $input.first().json } }];\n}"
+      },
+      "id": "e9ee53d8-fea0-4905-994e-3f272129486e",
+      "name": "Parse AI Response - Negative",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "barbjspecian@gmail.com",
+        "toEmail": "bjspecian@gmail.com",
+        "subject": "🚨 ALERTA: Feedback Crítico Recebido - Ação Imediata Necessária",
+        "html": "=<h2>🚨 Alerta de Feedback Crítico</h2><p>Um feedback negativo de alta severidade foi recebido e requer atenção imediata.</p><h3>Detalhes do Cliente:</h3><p><strong>Nome:</strong> ={{ $json.originalData['Your Name'] }}<br><strong>Email:</strong> ={{ $json.originalData['Your Email'] }}<br><strong>Data:</strong> ={{ $json.originalData.timestamp }}</p><h3>Feedback:</h3><p>={{ $json.originalData['Your Feedback'] }}</p><h3>Análise da IA:</h3><p><strong>Severidade:</strong> ={{ $json.severity }}<br><strong>Requer Ação Imediata:</strong> ={{ $json.requires_immediate_action ? 'Sim' : 'Não' }}</p><p><strong>Resposta Enviada ao Cliente:</strong><br>={{ $json.email_body }}</p><hr><p><em>Este é um alerta automático do sistema de feedback.</em></p>",
+        "options": {}
+      },
+      "id": "b46af4ba-f8ee-4598-912c-4018917e34f4",
+      "name": "Send Critical Alert Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        848,
+        368
+      ],
+      "webhookId": "08ca863f-9664-46d6-9699-f7441f201a20",
+      "credentials": {
+        "smtp": {
+          "id": "Oe4rEBWGI5ihO7Z7",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        896,
+        608
+      ],
+      "id": "2a74cbb3-53ed-4582-a578-d1985aa1b801",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Analyze Sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Sentiment": {
+      "main": [
+        [
+          {
+            "node": "Check Sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Sentiment": {
+      "main": [
+        [
+          {
+            "node": "Positive Feedback Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Negative Feedback Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Tool - Positive": {
+      "ai_tool": [
+        [
+          {
+            "node": "Positive Feedback Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Tool - Negative": {
+      "ai_tool": [
+        [
+          {
+            "node": "Negative Feedback Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Tool - Positive": {
+      "ai_tool": [
+        [
+          {
+            "node": "Positive Feedback Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Tool - Negative": {
+      "ai_tool": [
+        [
+          {
+            "node": "Negative Feedback Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer Feedback Form": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Negative Feedback Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model - Positive": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Positive Feedback Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser - Positive": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Positive Feedback Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser - Negative": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Negative Feedback Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Positive Feedback Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response - Positive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Negative Feedback Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response - Negative",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response - Negative": {
+      "main": [
+        [
+          {
+            "node": "Critical Feedback Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Critical Feedback Router": {
+      "main": [
+        [
+          {
+            "node": "Send Critical Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a36fc0f6-99e3-45e3-bee0-a4e55103d06f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "44ef47d05f6e16579eb1149b69cbe55a0687fbed339f7dc7c5a970d1e5dc40a6"
+  },
+  "id": "lhuEXuGOwj8XXZIO",
+  "tags": []
+}
