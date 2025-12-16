@@ -4,7 +4,7 @@ Este projeto consiste em um fluxo de trabalho automatizado (Workflow) desenvolvi
 
 ## 📖 Sobre o Projeto
 
-O objetivo desta automação é eliminar a triagem manual e lenta de feedbacks. Em cenários de alto volume de dados, ler cada comentário e escrever uma resposta individual é inviável. Este sistema delega a leitura e a redação inicial para a IA, deixando para os humanos apenas a supervisão ou o tratamento de casos complexos.
+O objetivo desta automação é eliminar a triagem manual e lenta de feedbacks. Em cenários de alto volume de dados, ler cada comentário e escrever uma resposta individual é inviável. Este sistema delega a leitura e a redação inicial para a IA, deixando para os humanos apenas a supervisão ou o tratamento de casos complexos. Ideal para operações B2C de alto volume (como Varejo, SaaS PLG ou Apps de Delivery), onde a velocidade de resposta é o principal fator de satisfação do cliente.
 
 ## 🚀 Objetivos e Benefícios
 
